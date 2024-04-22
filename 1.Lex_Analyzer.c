@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define MAX_IDENTIFIER_LENGTH 50
+#define MAX_PROGRAM_LENGTH 10000
 
 enum TokenType {
     TOKEN_IDENTIFIER,
@@ -24,15 +25,12 @@ bool is_valid_identifier_char(char c) {
     return isalnum(c) || c == '_';
 }
 
-
 bool is_whitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-
 bool is_keyword(const char *lexeme) {
-
-    const char *keywords[] = {"if", "else", "while", "for", "int", "float", "return"};
+    const char *keywords[] = {"if", "else", "while", "for", "int", "float", "return","main"};
     for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i) {
         if (strcmp(lexeme, keywords[i]) == 0) {
             return true;
@@ -41,110 +39,157 @@ bool is_keyword(const char *lexeme) {
     return false;
 }
 
-struct Token get_next_token() {
+void analyze_program(char program[], int *num_tokens, int *num_keywords, int *num_identifiers, int *num_numbers, int *num_operators, int *num_symbols, int *num_unknowns) {
     struct Token token;
-    char c;
     int i = 0;
+    char* identifiers[MAX_PROGRAM_LENGTH];
+    char* keywords[MAX_PROGRAM_LENGTH];
+    char* numbers[MAX_PROGRAM_LENGTH];
+    char* operators[MAX_PROGRAM_LENGTH];
+    char* symbols[MAX_PROGRAM_LENGTH];
+    char* unknowns[MAX_PROGRAM_LENGTH];
+    int id_count = 0;
+    int kw_count = 0;
+    int num_count = 0;
+    int op_count = 0;
+    int sym_count = 0;
+    int unk_count = 0;
 
-    do {
-        c = getchar();
-        if (c == '/') {
-            char next_char = getchar();
-            if (next_char == '/') {
-                while (c != '\n' && c != EOF) {
-                    c = getchar();
-                }
-            } else {
-                ungetc(next_char, stdin);
+    while (program[i] != '\0') {
+        char c = program[i];
+
+        if (is_valid_identifier_char(c) && !isdigit(c)) {
+            int j = 0;
+            token.type = TOKEN_IDENTIFIER;
+            while (is_valid_identifier_char(c) && j < MAX_IDENTIFIER_LENGTH - 1) {
+                token.lexeme[j++] = c;
+                c = program[++i];
             }
+            token.lexeme[j] = '\0';
+            if (is_keyword(token.lexeme)) {
+                token.type = TOKEN_KEYWORD;
+                keywords[kw_count++] = strdup(token.lexeme);
+            } else {
+                identifiers[id_count++] = strdup(token.lexeme);
+            }
+        } else if (isdigit(c)) {
+            int j = 0;
+            token.type = TOKEN_NUMBER;
+            while ((isdigit(c) || c == '.') && j < MAX_IDENTIFIER_LENGTH - 1) {
+                token.lexeme[j++] = c;
+                c = program[++i];
+            }
+            token.lexeme[j] = '\0';
+            numbers[num_count++] = strdup(token.lexeme);
+        } else if (is_whitespace(c)) {
+            ++i;
+            continue;
+        } else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>') {
+            token.type = TOKEN_OPERATOR;
+            token.lexeme[0] = c;
+            token.lexeme[1] = '\0';
+            operators[op_count++] = strdup(token.lexeme);
+            ++i;
+        } else if (c == '(' || c == ')' || c == '{' || c == '}' || c == ';' || c == ',') {
+            token.type = TOKEN_SYMBOL;
+            token.lexeme[0] = c;
+            token.lexeme[1] = '\0';
+            symbols[sym_count++] = strdup(token.lexeme);
+            ++i;
+        } else {
+            token.type = TOKEN_UNKNOWN;
+            token.lexeme[0] = c;
+            token.lexeme[1] = '\0';
+            unknowns[unk_count++] = strdup(token.lexeme);
+            ++i;
         }
-    } while (is_whitespace(c));
-
-    if (c == EOF) {
-        token.type = TOKEN_EOF;
-        return token;
     }
 
-    if (is_valid_identifier_char(c)) {
-        token.type = TOKEN_IDENTIFIER;
-        token.lexeme[i++] = c;
-        while ((c = getchar()) != EOF && is_valid_identifier_char(c) && i < MAX_IDENTIFIER_LENGTH - 1) {
-            token.lexeme[i++] = c;
-        }
-        token.lexeme[i] = '\0';
-        ungetc(c, stdin);
-        if (is_keyword(token.lexeme)) {
-            token.type = TOKEN_KEYWORD;
-        }
-        return token;
+    // Print identifiers
+    printf("Identifiers: ");
+    for (int j = 0; j < id_count; j++) {
+        printf("%s", identifiers[j]);
+        if (j != id_count - 1)
+            printf(", ");
     }
+    printf("\n");
 
-
-    if (isdigit(c)) {
-        token.type = TOKEN_NUMBER;
-        token.lexeme[i++] = c;
-        while ((c = getchar()) != EOF && (isdigit(c) || c == '.') && i < MAX_IDENTIFIER_LENGTH - 1) {
-            token.lexeme[i++] = c;
-        }
-        token.lexeme[i] = '\0';
-        ungetc(c, stdin);
-        return token;
+    // Print keywords
+    printf("Keywords: ");
+    for (int j = 0; j < kw_count; j++) {
+        printf("%s", keywords[j]);
+        if (j != kw_count - 1)
+            printf(", ");
     }
+    printf("\n");
 
-
-    if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>') {
-        token.type = TOKEN_OPERATOR;
-        token.lexeme[i++] = c;
-        token.lexeme[i] = '\0';
-        return token;
+    // Print numbers
+    printf("Numbers: ");
+    for (int j = 0; j < num_count; j++) {
+        printf("%s", numbers[j]);
+        if (j != num_count - 1)
+            printf(", ");
     }
+    printf("\n");
 
-    if (c == '(' || c == ')' || c == '{' || c == '}' || c == ';' || c == ',') {
-        token.type = TOKEN_SYMBOL;
-        token.lexeme[i++] = c;
-        token.lexeme[i] = '\0';
-        return token;
+    // Print operators
+    printf("Operators: ");
+    for (int j = 0; j < op_count; j++) {
+        printf("%s", operators[j]);
+        if (j != op_count - 1)
+            printf(", ");
     }
+    printf("\n");
 
-    token.type = TOKEN_UNKNOWN;
-    token.lexeme[0] = c;
-    token.lexeme[1] = '\0';
-    return token;
+    // Print symbols
+    printf("Symbols: ");
+    for (int j = 0; j < sym_count; j++) {
+        printf("%s", symbols[j]);
+        if (j != sym_count - 1)
+            printf(", ");
+    }
+    printf("\n");
+
+    // Print unknowns
+    printf("Unknowns: ");
+    for (int j = 0; j < unk_count; j++) {
+        printf("%s", unknowns[j]);
+        if (j != unk_count - 1)
+            printf(", ");
+    }
+    printf("\n");
+
+    // Print total number of tokens
+    *num_tokens = id_count + kw_count + num_count + op_count + sym_count + unk_count;
+
+    // Return counts
+    *num_keywords = kw_count;
+    *num_identifiers = id_count;
+    *num_numbers = num_count;
+    *num_operators = op_count;
+    *num_symbols = sym_count;
+    *num_unknowns = unk_count;
 }
 
 int main() {
-    struct Token token;
-    do {
-        token = get_next_token();
-        switch (token.type) {
-            case TOKEN_IDENTIFIER:
-                printf("Identifier: %s\n", token.lexeme);
-                break;
-            case TOKEN_NUMBER:
-                printf("Number: %s\n", token.lexeme);
-                break;
-            case TOKEN_OPERATOR:
-                printf("Operator: %s\n", token.lexeme);
-                break;
-            case TOKEN_KEYWORD:
-                printf("Keyword: %s\n", token.lexeme);
-                break;
-            case TOKEN_SYMBOL:
-                printf("Symbol: %s\n", token.lexeme);
-                break;
-            case TOKEN_UNKNOWN:
-                printf("Unknown: %s\n", token.lexeme);
-                break;
-            case TOKEN_EOF:
-                printf("End of file\n");
-                break;
-            default:
-                break;
-        }
-    } while (token.type != TOKEN_EOF);
+    char program[MAX_PROGRAM_LENGTH];
+    int c, i = 0;
+
+    // Read program until EOF (Ctrl+D)
+    while ((c = getchar()) != EOF && i < MAX_PROGRAM_LENGTH - 1) {
+        program[i++] = c;
+    }
+    program[i] = '\0';
+
+    // Analyze the program
+    int num_tokens, num_keywords, num_identifiers, num_numbers, num_operators, num_symbols, num_unknowns;
+    analyze_program(program, &num_tokens, &num_keywords, &num_identifiers, &num_numbers, &num_operators, &num_symbols, &num_unknowns);
+    printf("\nTotal number of tokens: %d\n", num_tokens);
 
     return 0;
 }
+
+
 // int main() {
 //     int x = 10;
 //     float y = 20.5;
