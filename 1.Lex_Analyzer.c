@@ -158,3 +158,13 @@ int main() {
 
     return 0;
 }
+// int main() {
+//     int x = 10;
+//     float y = 20.5;
+//     if (x > 5) {
+//         printf("x is greater than 5\n");
+//     } else {
+//         printf("x is less than or equal to 5\n");
+//     }
+//     return 0;
+// }
