@@ -74,3 +74,6 @@ int main() {
     getchar();
     return 0;
 }
+
+// INPUT :
+// id+id*id-id

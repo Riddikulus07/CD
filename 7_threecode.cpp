@@ -1,99 +1,71 @@
-//Write a program to generate 3 address codes along with quadruples, triples, and indirect triples 
+//INPUT: a+b*c-d/e
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#define MAX_SIZE 100
-
-typedef struct Quadruple {
-    char op;
-    char arg1[10];
-    char arg2[10];
-    char result[10];
-} Quadruple;
-
-typedef struct Triple {
-    char op;
-    char arg1[10];
-    char arg2[10];
-} Triple;
-
-typedef struct IndirectTriple {
-    char op;
-    int arg1_index;
-    int arg2_index;
-} IndirectTriple;
-
-Quadruple quadruples[MAX_SIZE];
-Triple triples[MAX_SIZE];
-IndirectTriple indirectTriples[MAX_SIZE];
-
-int quadIndex = 0;
-int tripleIndex = 0;
-int indirectIndex = 0;
-
-void generateQuadruple(char op, char arg1[], char arg2[], char result[]) {
-    quadruples[quadIndex].op = op;
-    strcpy(quadruples[quadIndex].arg1, arg1);
-    strcpy(quadruples[quadIndex].arg2, arg2);
-    strcpy(quadruples[quadIndex].result, result);
-    quadIndex++;
-}
-
-void generateTriple(char op, char arg1[], char arg2[]) {
-    triples[tripleIndex].op = op;
-    strcpy(triples[tripleIndex].arg1, arg1);
-    strcpy(triples[tripleIndex].arg2, arg2);
-    tripleIndex++;
-}
-
-void generateIndirectTriple(char op, int arg1_index, int arg2_index) {
-    indirectTriples[indirectIndex].op = op;
-    indirectTriples[indirectIndex].arg1_index = arg1_index;
-    indirectTriples[indirectIndex].arg2_index = arg2_index;
-    indirectIndex++;
-}
+// Function prototypes
+char* get_temp(void);
+void generate_tac(char* op, char* arg1, char* arg2, char* result);
+void print_quad(char* op, char* arg1, char* arg2, char* result);
+void print_triple(char* op, char* arg1, char* arg2);
 
 int main() {
-    char expression[MAX_SIZE];
-    printf("Enter a simple arithmetic expression: ");
-    fgets(expression, sizeof(expression), stdin);
+  char var1[] = "a";
+  char var2[] = "b";
+  char var3[] = "c";
+  char var4[] = "d";
+  char var5[] = "e";
 
-    char *token = strtok(expression, " ");
-    char operand[MAX_SIZE], arg1[MAX_SIZE], arg2[MAX_SIZE], result[MAX_SIZE];
+  // Generate TAC with temporary variables
+  char* temp1 = get_temp();
+  char* temp2 = get_temp();
+  char* temp3 = get_temp();
 
-    while (token != NULL) {
-        if (*token == '+' || *token == '-' || *token == '*' || *token == '/') {
-            operand[0] = *token;
-            operand[1] = '\0';
-            token = strtok(NULL, " ");
-            strcpy(arg1, token);
-            token = strtok(NULL, " ");
-            strcpy(arg2, token);
-            sprintf(result, "t%d", quadIndex + 1);
+  generate_tac("*", var2, var3, temp1); // temp1 = b * c
+  generate_tac("/", var4, var5, temp2); // temp2 = d / e
+  generate_tac("+", temp1, temp2, temp3); // temp3 = temp1 + temp2
+  generate_tac("+", var1, temp3, NULL);  // a = a + temp3
+printf("\n\nExpression : a+b*c-d/e\n\n");
+  // Print TAC, quadruples, and triples
+  printf("Three Address Code:\n");
+  printf("%s = %s * %s\n", temp1, var2, var3);
+  printf("%s = %s / %s\n", temp2, var4, var5);
+  printf("%s = %s + %s\n", temp3, temp1, temp2);
+  printf("%s = %s + %s\n", var1, var1, temp3);
 
-            generateQuadruple(operand[0], arg1, arg2, result);
-            generateTriple(operand[0], arg1, arg2);
-            generateIndirectTriple(operand[0], tripleIndex - 1, tripleIndex - 2);
-        }
-        token = strtok(NULL, " ");
-    }
+  printf("\nQuadruples:\n");
+  print_quad("*", var2, var3, temp1);
+  print_quad("/", var4, var5, temp2);
+  print_quad("+", temp1, temp2, temp3);
+  print_quad("+", var1, temp3, NULL);
 
-    printf("\nThree Address Code:\n");
-    for (int i = 0; i < quadIndex; i++) {
-        printf("%s = %s %c %s\n", quadruples[i].result, quadruples[i].arg1, quadruples[i].op, quadruples[i].arg2);
-    }
+  printf("\nTriples:\n");
+  print_triple("*", var2, var3);
+  print_triple("/", var4, var5);
+  print_triple("+", temp1, temp2);
+  print_triple("+", var1, temp3);
 
-    printf("\nTriples:\n");
-    for (int i = 0; i < tripleIndex; i++) {
-        printf("(%c, %s, %s)\n", triples[i].op, triples[i].arg1, triples[i].arg2);
-    }
+  return 0;
+}
+// Generate temporary variable name
+char* get_temp(void) {
+  static int temp_count = 0;
+  char temp_name[10];
+  sprintf(temp_name, "t%d", temp_count++);
+  return strdup(temp_name);
+}
 
-    printf("\nIndirect Triples:\n");
-    for (int i = 0; i < indirectIndex; i++) {
-        printf("(%c, %d, %d)\n", indirectTriples[i].op, indirectTriples[i].arg1_index, indirectTriples[i].arg2_index);
-    }
+// Generate three-address code instruction
+void generate_tac(char* op, char* arg1, char* arg2, char* result) {
+  printf("%s = %s %s%s\n", result, arg1 ? arg1 : "", op, arg2 ? arg2 : "");
+}
 
-    return 0;
+// Print quadruple (op arg1 arg2 result)
+void print_quad(char* op, char* arg1, char* arg2, char* result) {
+  printf("%s %s %s %s\n", op, arg1, arg2, result);
+}
+
+// Print triple (op arg1 arg2)
+void print_triple(char* op, char* arg1, char* arg2) {
+  printf("%s %s %s\n", op, arg1, arg2);
 }
