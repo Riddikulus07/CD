@@ -20,20 +20,18 @@ struct Token {
     char lexeme[MAX_IDENTIFIER_LENGTH];
 };
 
-// Function to check if a character is a valid identifier character
 bool is_valid_identifier_char(char c) {
     return isalnum(c) || c == '_';
 }
 
-// Function to check if a character is a whitespace character
+
 bool is_whitespace(char c) {
     return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-// Function to check if a string is a keyword
+
 bool is_keyword(const char *lexeme) {
-    // Add your keyword checking logic here
-    // For simplicity, let's assume some keywords
+
     const char *keywords[] = {"if", "else", "while", "for", "int", "float", "return"};
     for (int i = 0; i < sizeof(keywords) / sizeof(keywords[0]); ++i) {
         if (strcmp(lexeme, keywords[i]) == 0) {
@@ -43,24 +41,20 @@ bool is_keyword(const char *lexeme) {
     return false;
 }
 
-// Function to get the next token from input
 struct Token get_next_token() {
     struct Token token;
     char c;
     int i = 0;
 
-    // Ignore whitespaces and comments
     do {
         c = getchar();
         if (c == '/') {
             char next_char = getchar();
             if (next_char == '/') {
-                // Comment, skip until end of line
                 while (c != '\n' && c != EOF) {
                     c = getchar();
                 }
             } else {
-                // Not a comment, put back the character
                 ungetc(next_char, stdin);
             }
         }
@@ -71,7 +65,6 @@ struct Token get_next_token() {
         return token;
     }
 
-    // Identifiers or Keywords
     if (is_valid_identifier_char(c)) {
         token.type = TOKEN_IDENTIFIER;
         token.lexeme[i++] = c;
@@ -86,7 +79,7 @@ struct Token get_next_token() {
         return token;
     }
 
-    // Numbers
+
     if (isdigit(c)) {
         token.type = TOKEN_NUMBER;
         token.lexeme[i++] = c;
@@ -98,8 +91,7 @@ struct Token get_next_token() {
         return token;
     }
 
-    // Operators
-    // Assuming operators are single characters
+
     if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>') {
         token.type = TOKEN_OPERATOR;
         token.lexeme[i++] = c;
@@ -107,8 +99,6 @@ struct Token get_next_token() {
         return token;
     }
 
-    // Symbols
-    // Assuming symbols are single characters
     if (c == '(' || c == ')' || c == '{' || c == '}' || c == ';' || c == ',') {
         token.type = TOKEN_SYMBOL;
         token.lexeme[i++] = c;
@@ -116,7 +106,6 @@ struct Token get_next_token() {
         return token;
     }
 
-    // Unknown token
     token.type = TOKEN_UNKNOWN;
     token.lexeme[0] = c;
     token.lexeme[1] = '\0';
@@ -125,8 +114,6 @@ struct Token get_next_token() {
 
 int main() {
     struct Token token;
-
-    // Get tokens until EOF
     do {
         token = get_next_token();
         switch (token.type) {

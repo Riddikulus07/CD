@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Define node types for the abstract syntax tree
+
 typedef enum {
     OPERATOR_ADD,
     OPERATOR_SUB,
@@ -12,7 +12,7 @@ typedef enum {
     OPERAND_CONST
 } NodeType;
 
-// Define the structure for nodes in the abstract syntax tree
+
 typedef struct Node {
     NodeType type;
     int value;  // For operands
@@ -20,7 +20,7 @@ typedef struct Node {
     struct Node *right;
 } Node;
 
-// Function to create a new node
+
 Node *createNode(NodeType type, int value, Node *left, Node *right) {
     Node *node = (Node *)malloc(sizeof(Node));
     node->type = type;
@@ -30,19 +30,19 @@ Node *createNode(NodeType type, int value, Node *left, Node *right) {
     return node;
 }
 
-// Function to generate machine code recursively from the AST
+
 void generateMachineCode(Node *root) {
     if (root == NULL) {
         return;
     }
 
     if (root->type == OPERAND_CONST) {
-        printf("PUSH %d\n", root->value); // Push the constant onto the stack
+        printf("PUSH %d\n", root->value);
     } else {
-        generateMachineCode(root->left); // Process left subtree
-        generateMachineCode(root->right); // Process right subtree
+        generateMachineCode(root->left);
+        generateMachineCode(root->right);
 
-        // Perform the operation based on the operator type
+
         switch (root->type) {
             case OPERATOR_ADD:
                 printf("ADD\n");
@@ -63,7 +63,7 @@ void generateMachineCode(Node *root) {
     }
 }
 
-// Function to delete the AST
+
 void deleteTree(Node *root) {
     if (root != NULL) {
         deleteTree(root->left);
@@ -82,10 +82,10 @@ int main() {
                                                    createNode(OPERAND_CONST, 4, NULL, NULL))),
                              createNode(OPERAND_CONST, 5, NULL, NULL));
 
-    // Generate machine code from the AST
+
     generateMachineCode(root);
 
-    // Clean up the memory used by the AST
+
     deleteTree(root);
 
     return 0;

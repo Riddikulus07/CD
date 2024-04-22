@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-// Function prototypes
+
 char* get_temp(void);
 void generate_tac(char* op, char* arg1, char* arg2, char* result);
 void print_quad(char* op, char* arg1, char* arg2, char* result);
@@ -16,7 +16,7 @@ int main() {
   char var4[] = "d";
   char var5[] = "e";
 
-  // Generate TAC with temporary variables
+
   char* temp1 = get_temp();
   char* temp2 = get_temp();
   char* temp3 = get_temp();
@@ -26,7 +26,7 @@ int main() {
   generate_tac("+", temp1, temp2, temp3); // temp3 = temp1 + temp2
   generate_tac("+", var1, temp3, NULL);  // a = a + temp3
 printf("\n\nExpression : a+b*c-d/e\n\n");
-  // Print TAC, quadruples, and triples
+
   printf("Three Address Code:\n");
   printf("%s = %s * %s\n", temp1, var2, var3);
   printf("%s = %s / %s\n", temp2, var4, var5);
@@ -47,7 +47,7 @@ printf("\n\nExpression : a+b*c-d/e\n\n");
 
   return 0;
 }
-// Generate temporary variable name
+
 char* get_temp(void) {
   static int temp_count = 0;
   char temp_name[10];
@@ -55,17 +55,17 @@ char* get_temp(void) {
   return strdup(temp_name);
 }
 
-// Generate three-address code instruction
+
 void generate_tac(char* op, char* arg1, char* arg2, char* result) {
   printf("%s = %s %s%s\n", result, arg1 ? arg1 : "", op, arg2 ? arg2 : "");
 }
 
-// Print quadruple (op arg1 arg2 result)
+
 void print_quad(char* op, char* arg1, char* arg2, char* result) {
   printf("%s %s %s %s\n", op, arg1, arg2, result);
 }
 
-// Print triple (op arg1 arg2)
+
 void print_triple(char* op, char* arg1, char* arg2) {
   printf("%s %s %s\n", op, arg1, arg2);
 }
