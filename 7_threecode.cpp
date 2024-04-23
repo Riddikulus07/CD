@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 
-
+// Function prototypes
 char* get_temp(void);
 void generate_tac(char* op, char* arg1, char* arg2, char* result);
 void print_quad(char* op, char* arg1, char* arg2, char* result);
@@ -24,7 +24,7 @@ int main() {
   generate_tac("*", var2, var3, temp1); // temp1 = b * c
   generate_tac("/", var4, var5, temp2); // temp2 = d / e
   generate_tac("+", temp1, temp2, temp3); // temp3 = temp1 + temp2
-  generate_tac("+", var1, temp3, NULL);  // a = a + temp3
+  generate_tac("+", var1, temp3, var1);  // a = a + temp3
 printf("\n\nExpression : a+b*c-d/e\n\n");
 
   printf("Three Address Code:\n");

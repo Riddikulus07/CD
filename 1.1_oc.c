@@ -39,6 +39,17 @@ bool is_keyword(const char *lexeme) {
     return false;
 }
 
+bool is_comment(const char *program, int i, int program_length) {
+    if (program[i] == '/' && i + 1 < program_length) {
+        if (program[i + 1] == '/') {  // Single-line comment
+            return true;
+        } else if (program[i + 1] == '*') {  // Multi-line comment
+            return true;
+        }
+    }
+    return false;
+}
+
 void analyze_program(const char program[], int program_length, int *num_tokens, int *num_keywords, int *num_identifiers, int *num_numbers, int *num_operators, int *num_symbols, int *num_unknowns) {
     struct Token token;
     int i = 0;
@@ -57,6 +68,28 @@ void analyze_program(const char program[], int program_length, int *num_tokens, 
 
     while (i < program_length) {
         char c = program[i];
+
+        // Skip whitespace characters
+        if (is_whitespace(c)) {
+            ++i;
+            continue;
+        }
+
+        // Skip comments
+        if (is_comment(program, i, program_length)) {
+            if (program[i] == '/' && program[i + 1] == '/') {  // Single-line comment
+                while (i < program_length && program[i] != '\n') {
+                    ++i;
+                }
+            } else if (program[i] == '/' && program[i + 1] == '*') {  // Multi-line comment
+                i += 2;  // Skip '/*'
+                while (i < program_length - 1 && (program[i] != '*' || program[i + 1] != '/')) {
+                    ++i;
+                }
+                i += 2;  // Skip '*/'
+            }
+            continue;
+        }
 
         if (is_valid_identifier_char(c) && !isdigit(c)) {
             int j = 0;
@@ -81,9 +114,6 @@ void analyze_program(const char program[], int program_length, int *num_tokens, 
             }
             token.lexeme[j] = '\0';
             strcpy(numbers[num_count++], token.lexeme);
-        } else if (is_whitespace(c)) {
-            ++i;
-            continue;
         } else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '<' || c == '>') {
             token.type = TOKEN_OPERATOR;
             token.lexeme[0] = c;
@@ -96,6 +126,17 @@ void analyze_program(const char program[], int program_length, int *num_tokens, 
             token.lexeme[1] = '\0';
             strcpy(symbols[sym_count++], token.lexeme);
             ++i;
+        } else if (c == '\\') {
+            // Handle escape sequences
+            int j = 0;
+            token.type = TOKEN_UNKNOWN;
+            token.lexeme[j++] = '\\';
+            if (i + 1 < program_length) {
+                token.lexeme[j++] = program[++i];
+            }
+            token.lexeme[j] = '\0';
+            strcpy(unknowns[unk_count++], token.lexeme);
+            ++i;
         } else {
             token.type = TOKEN_UNKNOWN;
             token.lexeme[0] = c;
@@ -105,8 +146,8 @@ void analyze_program(const char program[], int program_length, int *num_tokens, 
         }
     }
 
-    // Print identifiers
-    printf("Identifiers: ");
+   // Print identifiers
+    printf("\nIdentifiers: ");
     for (int j = 0; j < id_count; j++) {
         printf("%s", identifiers[j]);
         if (j != id_count - 1)
@@ -158,7 +199,6 @@ void analyze_program(const char program[], int program_length, int *num_tokens, 
             printf(", ");
     }
     printf("\n");
-
     // Print total number of tokens
     *num_tokens = id_count + kw_count + num_count + op_count + sym_count + unk_count;
 
